@@ -7,9 +7,10 @@ import resource
 import tracemalloc
 
 from tsp import christofides as c
+from tsp import twice_around as t
 
 def main():
-    code = 2
+    code = 3
 
     path = "tp2_datasets.txt"
     tests = pd.read_csv(path, delimiter='\t')
@@ -23,6 +24,9 @@ def main():
               
         if not (code % 2):
             print(f'C - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[0][0], 2)}, Quality: {round(get_quality(limiar, answer[0][0]), 2)}, Time: {round(answer[0][1], 2)}s')
+        
+        if not (code % 3):
+            print(f'T - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[1][0], 2)}, Quality: {round(get_quality(limiar, answer[1][0]), 2)}, Time: {round(answer[1][1], 2)}s')
 
 def get_quality(limiar, cost):
     quality = 0
@@ -86,11 +90,11 @@ def tsp(dataset, algorithm=30):
         start_time = time.perf_counter()
 
         # roda algoritmo twice around
-        print("twice around")
+        twice = t.twice(G)
 
         end_time = time.perf_counter()
         twice_time = (end_time - start_time) + graph_build_time
-        answer[1] = [0, 0]
+        answer[1] = [twice, twice_time]
 
     if not (algorithm % 5):
         start_time = time.perf_counter()
