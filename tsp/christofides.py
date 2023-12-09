@@ -21,8 +21,8 @@ def christofides(G, weight="weight"):
 
     # computa circuito euleriano
     eulerian_circuit = list(nx.dfs_preorder_nodes(MG))
-    print(eulerian_circuit)
-    print("len:", len(eulerian_circuit))
+    # print(eulerian_circuit)
+    # print("len:", len(eulerian_circuit))
 
     # elimina vértices duplicados
     circuit = shortcutting(eulerian_circuit)
