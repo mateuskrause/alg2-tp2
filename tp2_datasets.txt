@@ -1,6 +1,5 @@
 Dataset	Nós	Limiar
-eil51	51	426
-berlin52	52	7542
+graph	52	278
 st70	70	675
 eil76	76	538
 pr76	76	108159

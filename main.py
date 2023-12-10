@@ -8,9 +8,10 @@ import tracemalloc
 
 from tsp import christofides as c
 from tsp import twice_around as t
+from tsp import branch_and_bound as b
 
 def main():
-    code = 3
+    code = 5
 
     path = "tp2_datasets.txt"
     tests = pd.read_csv(path, delimiter='\t')
@@ -28,9 +29,13 @@ def main():
         if not (code % 3):
             print(f'T - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[1][0], 2)}, Quality: {round(get_quality(limiar, answer[1][0]), 2)}, Time: {round(answer[1][1], 2)}s')
 
+        if not (code % 5):
+            print(f'B - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[2][0], 2)}, Quality: {round(get_quality(limiar, answer[2][0]), 2)}, Time: {round(answer[2][1], 2)}s')
+
 def get_quality(limiar, cost):
     quality = 0
 
+    limiar = str(limiar)
     if limiar[0] == '[':
         values = limiar[1:-1].split(',')
         range = (values[0], values[1])
@@ -100,11 +105,11 @@ def tsp(dataset, algorithm=30):
         start_time = time.perf_counter()
 
         # roda algoritmo branch and bound
-        print("branch and bound")
+        branch = b.branch_and_bound(G)
 
         end_time = time.perf_counter()
         branch_time = (end_time - start_time) + graph_build_time
-        answer[2] = [0, 0]
+        answer[2] = [branch, branch_time]
 
     return answer
 
