@@ -1,5 +1,5 @@
 Dataset	Nós	Limiar
-graph	52	278
+graph	52	279
 st70	70	675
 eil76	76	538
 pr76	76	108159

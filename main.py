@@ -1,20 +1,57 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import math
 import time
 import resource 
 import tracemalloc
+from datetime import datetime
 
 from tsp import christofides as c
 from tsp import twice_around as t
 from tsp import branch_and_bound as b
 
 def main():
-    code = 6
 
+    """
+    código de quais algoritmos serão computados dado o arquivo padrão de datasets
+
+    2 - christofides
+    3 - twice around the tree
+    5 - branch and bound
+
+    para executar mais de um ao mesmo tempo (e aproveitar o grafo já criado na memoria)
+    usar a multiplicação dos algoritmos.
+
+    ex: christofides e twice: 2*3 = 6
+    ex: christofides, twice e branch: 2*3*5 = 30
+    """
+
+    code = 5
     path = "tp2_datasets.txt"
+
     tests = pd.read_csv(path, delimiter='\t')
+
+    # novos arquivos para armazenar resultados
+    categories = ['Dataset', 'Limiar', 'Cost', 'Quality', 'Time', 'Memory']
+
+    df_2_name = "experiments/christofides-" + str(datetime.now()) + ".csv"
+    df_2 = pd.DataFrame(columns=categories)
+
+    df_3_name = "experiments/twice_around-" + str(datetime.now()) + ".csv"
+    df_3 = pd.DataFrame(columns=categories)
+
+    df_5_name = "experiments/branch_and_bound-" + str(datetime.now()) + ".csv"
+    df_5 = pd.DataFrame(columns=categories)
+
+    if not (code % 2):
+        df_2.to_csv(df_2_name, index=False)
+        
+    if not (code % 3):
+        df_3.to_csv(df_3_name, index=False)
+
+    if not (code % 5):
+        df_5.to_csv(df_5_name, index=False)
 
     for index, row in tests.iterrows():
         dataset = row['Dataset']
@@ -23,14 +60,24 @@ def main():
         # executa o algoritmo
         answer = tsp(dataset, code)
               
+        # apresenta os resultados
         if not (code % 2):
-            print(f'C - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[0][0], 2)}, Quality: {round(get_quality(limiar, answer[0][0]), 2)}, Time: {round(answer[0][1], 2)}s')
+            print(f'C - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[0][0], 2)}, Quality: {round(get_quality(limiar, answer[0][0]), 2)}, Time: {round(answer[0][1], 2)}s, Mem: {round(answer[0][2], 2)}MB')
+            row = {'Dataset': dataset, 'Limiar': limiar, 'Cost': round(answer[0][0], 2), 'Quality': round(get_quality(limiar, answer[0][0]), 2), 'Time': round(answer[0][1], 2), 'Memory':round(answer[0][2], 2)}
+            result_df = pd.DataFrame([row])
+            result_df.to_csv(df_2_name, mode='a', index=False, header=False)
         
         if not (code % 3):
-            print(f'T - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[1][0], 2)}, Quality: {round(get_quality(limiar, answer[1][0]), 2)}, Time: {round(answer[1][1], 2)}s')
+            print(f'T - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[1][0], 2)}, Quality: {round(get_quality(limiar, answer[1][0]), 2)}, Time: {round(answer[1][1], 2)}s, Mem: {round(answer[1][2], 2)}MB')
+            row = {'Dataset': dataset, 'Limiar': limiar, 'Cost': round(answer[1][0], 2), 'Quality': round(get_quality(limiar, answer[1][0]), 2), 'Time': round(answer[1][1], 2), 'Memory':round(answer[1][2], 2)}
+            result_df = pd.DataFrame([row])
+            result_df.to_csv(df_3_name, mode='a', index=False, header=False)
 
         if not (code % 5):
-            print(f'B - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[2][0], 2)}, Quality: {round(get_quality(limiar, answer[2][0]), 2)}, Time: {round(answer[2][1], 2)}s')
+            print(f'B - Dataset: {dataset}, Limiar: {limiar}, Cost: {round(answer[2][0], 2)}, Quality: {round(get_quality(limiar, answer[2][0]), 2)}, Time: {round(answer[2][1], 2)}s, Mem: {round(answer[2][2], 2)}MB')
+            row = {'Dataset': dataset, 'Limiar': limiar, 'Cost': round(answer[2][0], 2), 'Quality': round(get_quality(limiar, answer[2][0]), 2), 'Time': round(answer[2][1], 2), 'Memory':round(answer[2][2], 2)}
+            result_df = pd.DataFrame([row])
+            result_df.to_csv(df_5_name, mode='a', index=False, header=False)
 
 def get_quality(limiar, cost):
     quality = 0
@@ -52,15 +99,16 @@ def tsp(dataset, algorithm=30):
     G = nx.Graph()
 
     file_path = "datasets/" + dataset + ".tsp"
-    print("file_path:", file_path)
+    print("running:", file_path)
 
-    # começa a contagem de tempo para criação do grafo
+    # começa a contagem de tempo e memoria para criação do grafo
     start_time = time.perf_counter()
+    tracemalloc.reset_peak()
+    tracemalloc.start()
 
     node_attributes = read_nodes_from_file(file_path)
     G.add_nodes_from(node_attributes.items())
 
-    # Calculate the Euclidean distances and create a distance matrix
     nodes = list(G.nodes())
     num_nodes = len(nodes)
 
@@ -72,10 +120,12 @@ def tsp(dataset, algorithm=30):
             distance = euclidean_distance(pos_i, pos_j)
             G.add_edge(nodes[i], nodes[j], weight=distance)
 
-    # stop the count!
+    # para a contagem
     end_time = time.perf_counter()
     graph_build_time = end_time - start_time
-
+    current_mem, peak_mem = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
     answer = [[], [], []]
     chris_time = 0
     twice_time = 0
@@ -83,58 +133,65 @@ def tsp(dataset, algorithm=30):
 
     if not (algorithm % 2):
         start_time = time.perf_counter()
+        tracemalloc.reset_peak()
+        tracemalloc.start()
 
         # roda algoritmo de christofides
         chris = c.christofides(G)
 
         end_time = time.perf_counter()
         chris_time = (end_time - start_time) + graph_build_time
-        answer[0] = [chris, chris_time]
+        chris_current_mem, chris_peak_mem = tracemalloc.get_traced_memory()
+        total_mem = (chris_peak_mem + peak_mem) / (1024 ** 2)
+        tracemalloc.stop()
+        answer[0] = [math.ceil(chris), chris_time, total_mem]
 
     if not (algorithm % 3):
         start_time = time.perf_counter()
+        tracemalloc.reset_peak()
+        tracemalloc.start()
 
         # roda algoritmo twice around
         twice = t.twice(G)
 
         end_time = time.perf_counter()
         twice_time = (end_time - start_time) + graph_build_time
-        answer[1] = [twice, twice_time]
+        twice_current_mem, twice_peak_mem = tracemalloc.get_traced_memory()
+        total_mem = (twice_peak_mem + peak_mem) / (1024 ** 2)
+        tracemalloc.stop()
+        answer[1] = [math.ceil(twice), twice_time, total_mem]
 
     if not (algorithm % 5):
         start_time = time.perf_counter()
+        tracemalloc.reset_peak()
+        tracemalloc.start()
 
         # roda algoritmo branch and bound
         branch = b.branch_and_bound(G)
 
         end_time = time.perf_counter()
         branch_time = (end_time - start_time) + graph_build_time
-        answer[2] = [branch, branch_time]
+        branch_current_mem, branch_peak_mem = tracemalloc.get_traced_memory()
+        total_mem = (branch_peak_mem + peak_mem) / (1024 ** 2)
+        tracemalloc.stop()
+        answer[2] = [math.ceil(branch), branch_time, total_mem]
 
     return answer
-
-
-    # draw graph
-    # node_positions = {node: data["pos"] for node, data in G.nodes(data=True)}
-    # edge_weights = {(edge[0], edge[1]): edge[2]['weight'] for edge in G.edges(data=True)}
-    # nx.draw(G, pos=node_positions, with_labels=True, node_size=700, node_color="skyblue", font_size=10, font_color="black", font_weight="bold", edge_color="gray", linewidths=1, width=2)
-    # nx.draw_networkx_edge_labels(G, pos=node_positions, edge_labels=edge_weights, font_color='red')
-    # plt.show()
-
 
 def read_nodes_from_file(file_path):
     nodes = {}
     data_section = False
     
+    # lê o arquivo de datasets
     with open(file_path, 'r') as file:
          for line_number, line in enumerate(file, start=1):
+
             if "NODE_COORD_SECTION" in line:
-                data_section = True  # Start processing lines after this line
+                data_section = True
                 continue
 
             if not data_section:
                 continue
-
             if line == "EOF\n":
                 break
 
