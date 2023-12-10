@@ -11,7 +11,7 @@ from tsp import twice_around as t
 from tsp import branch_and_bound as b
 
 def main():
-    code = 5
+    code = 6
 
     path = "tp2_datasets.txt"
     tests = pd.read_csv(path, delimiter='\t')
