@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import math
 import time
-import resource 
 import tracemalloc
 from datetime import datetime
 
@@ -27,7 +26,7 @@ def main():
     ex: christofides, twice e branch: 2*3*5 = 30
     """
 
-    code = 5
+    code = 6
     path = "tp2_datasets.txt"
 
     tests = pd.read_csv(path, delimiter='\t')
@@ -206,5 +205,4 @@ def euclidean_distance(pos1, pos2):
     return np.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
 
 if __name__ == "__main__":
-    """ This is executed when run from the command line """
     main()
