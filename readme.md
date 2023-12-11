@@ -1,6 +1,6 @@
 # alg2-tp2
 
-Implementação de três algoritmos para o Problema do Caixeiro Viajante Geométrico (TSP), duas baseadas em algoritmos aproximados - Twice Around the Tree e Christofides além de uma solução exata utilizando a técnica de Branch and Bound.
+Implementação de três algoritmos para o Problema do Caixeiro Viajante Geométrico (TSP), duas baseadas em algoritmos aproximados - Twice Around the Tree e Christofides - além de uma solução exata utilizando a técnica de Branch and Bound.
 
 ## Sobre o Código
 
