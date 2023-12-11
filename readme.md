@@ -2,10 +2,10 @@
 
 Implementação de três algoritmos para o Problema do Caixeiro Viajante Geométrico (TSP), duas baseadas em algoritmos aproximados - Twice Around the Tree e Christofides além de uma solução exata utilizando a técnica de Branch and Bound.
 
-## sobre o código
+## Sobre o Código
 
 Os algoritmos estão implementados individualmente na pasta `tsp`, enquanto o arquivo `main.py` faz a leitura dos datasets, criação dos grafos e computa métricas para a execução dos algoritmos, gerando um relatório. Mais informações dentro do arquivo.
 
-## dependências
+## Dependências
 
 É necessário a biblioteca externa `networkx` para lidar com a criação e algoritmos para grafos. As demais se encontram por padrão em uma instalação de python +3.9.
